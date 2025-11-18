@@ -252,7 +252,7 @@ fun RegisterScreen(
                         textDecoration = TextDecoration.Underline
                     ),
                     modifier = Modifier.clickable {
-                        navController.navigate(route = NavRoute.Login.route)
+                        if (!loading) navController.navigate(route = NavRoute.Login.route)
                     }
                 )
             }
@@ -260,22 +260,26 @@ fun RegisterScreen(
             Spacer(Modifier.height(24.dp))
 
             // BUTTON
-            if (loading) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    modifier = Modifier.size(22.dp)   // 👈 ukuran ideal agar pas di tengah
-                )
-            } else {
-                Button(
-                    onClick = {
-                        if (validateName() && validateEmail() && validatePassword() && validateConfirm()) {
-                            vm.register(name, email, password, onRegisterSuccess)
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) { Text("Register") }
+            Button(
+                onClick = {
+                    if (validateName() && validateEmail() && validatePassword() && validateConfirm()) {
+                        vm.register(name, email, password, onRegisterSuccess)
+                    }
+                },
+                enabled = !loading,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp)   // 👈 ukuran ideal agar pas di tengah
+                    )
+                } else {
+
+                    Text("Register")
+                }
             }
 
             error?.let {

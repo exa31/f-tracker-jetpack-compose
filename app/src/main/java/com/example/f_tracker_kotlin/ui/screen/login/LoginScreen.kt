@@ -185,7 +185,7 @@ fun LoginScreen(
                         textDecoration = TextDecoration.Underline
                     ),
                     modifier = Modifier.clickable {
-                        navController.navigate(route = NavRoute.Register.route)
+                        if (!loading) navController.navigate(route = NavRoute.Register.route)
                     }
                 )
             }

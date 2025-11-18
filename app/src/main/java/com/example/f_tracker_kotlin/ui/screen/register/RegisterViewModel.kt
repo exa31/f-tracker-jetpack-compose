@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 /*
@@ -150,13 +151,19 @@ class RegisterViewModel @Inject constructor(
             _error.value = ""
             _loading.value = true
             try {
-                val result = repo.login(email, password)
+                val result = repo.register(name, email, password)
                 store.saveToken(result.data.accessToken, result.data.refreshToken)
                 onSuccess()
             } catch (e: HttpException) {
                 val errorBody = e.response()?.errorBody()?.string()
-                val errorResponse = Gson().fromJson(errorBody, BaseResponse::class.java)
-                _error.value = errorResponse.message
+                val errorMessage = try {
+                    Gson().fromJson(errorBody, BaseResponse::class.java)?.message
+                } catch (_: Exception) {
+                    "Terjadi kesalahan pada server."
+                }
+                _error.value = errorMessage
+            } catch (e: SocketTimeoutException) {
+                _error.value = "Koneksi bermasalah, silakan coba lagi."
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {

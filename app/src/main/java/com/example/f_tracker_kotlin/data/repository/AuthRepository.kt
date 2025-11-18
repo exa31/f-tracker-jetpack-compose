@@ -12,5 +12,5 @@ class AuthRepository @Inject constructor(
         api.login(LoginRequest(email, password))
 
     suspend fun register(name: String, email: String, password: String) =
-        api.register(RegisterRequest(name, email, password))
+        api.register(RegisterRequest(name = name, email = email, password = password))
 }
