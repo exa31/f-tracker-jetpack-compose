@@ -1,5 +1,6 @@
 package com.example.f_tracker_kotlin.ui.screen.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -62,49 +67,13 @@ fun RegisterScreen(
     val loading by vm.loading.collectAsState()
     val error by vm.error.collectAsState()
 
-    fun validateName(): Boolean {
-        return if (name.length < 3) {
-            nameError = "Minimal 3 karakter"
-            false
-        } else {
-            nameError = null
-            true
-        }
-    }
-
-    fun validateEmail(): Boolean {
-        return if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailError = "Email tidak valid"
-            false
-        } else {
-            emailError = null
-            true
-        }
-    }
-
-    fun validatePassword(): Boolean {
-        return if (password.length < 6) {
-            passwordError = "Minimal 6 karakter"
-            false
-        } else {
-            passwordError = null
-            true
-        }
-    }
-
-    fun validateConfirm(): Boolean {
-        return if (confirmPassword != password) {
-            confirmError = "Password tidak sama"
-            false
-        } else {
-            confirmError = null
-            true
-        }
-    }
+    // warna hijau
+    val GreenPrimary = Color(0xFF4ADE80)
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF1B1B1F)) // background gelap
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -113,41 +82,55 @@ fun RegisterScreen(
             Text(
                 "Create Account ✨",
                 fontSize = MaterialTheme.typography.headlineMedium.fontSize,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
 
             Spacer(Modifier.height(32.dp))
 
             // NAME
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
+                ),
                 value = name,
-                onValueChange = { name = it; validateName() },
+                onValueChange = { name = it; if (name.length >= 3) nameError = null },
                 label = { Text("Name") },
                 singleLine = true,
                 isError = nameError != null,
+                modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
-                    onNext = {
-                        if (validateName()) emailFocus.requestFocus()
-                    }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (nameError != null)
-                Text(
-                    nameError!!, color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp)
+                    onNext = { if (name.length >= 3) emailFocus.requestFocus() }
                 )
+            )
+            nameError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             Spacer(Modifier.height(12.dp))
 
-
             // EMAIL
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error,
+                ),
                 value = email,
-                onValueChange = { email = it; validateEmail() },
+                onValueChange = {
+                    email = it; if (android.util.Patterns.EMAIL_ADDRESS.matcher(email)
+                        .matches()
+                ) emailError = null
+                },
                 label = { Text("Email Address") },
                 singleLine = true,
                 isError = emailError != null,
@@ -156,26 +139,27 @@ fun RegisterScreen(
                     .focusRequester(emailFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
-                    onNext = {
-                        if (validateEmail()) passFocus.requestFocus()
-                    }
-                )
+                    onNext = { if (emailError == null) passFocus.requestFocus() }
+                ),
             )
-            if (emailError != null)
-                Text(
-                    emailError!!, color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp)
-                )
+
+            emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             Spacer(Modifier.height(12.dp))
 
-
             // PASSWORD
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
+                ),
                 value = password,
-                onValueChange = { password = it; validatePassword() },
+                onValueChange = { password = it; if (password.length >= 6) passwordError = null },
                 label = { Text("Password") },
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
@@ -185,31 +169,31 @@ fun RegisterScreen(
                     .focusRequester(passFocus),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(
-                    onNext = {
-                        if (validatePassword()) confirmFocus.requestFocus()
-                    }
+                    onNext = { if (passwordError == null) confirmFocus.requestFocus() }
                 )
             )
-            if (passwordError != null)
-                Text(
-                    passwordError!!, color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp)
-                )
+            passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             Spacer(Modifier.height(12.dp))
 
-
             // CONFIRM PASSWORD
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
                 value = confirmPassword,
                 onValueChange = {
                     confirmPassword = it
-                    validateConfirm()
+                    if (confirmPassword == password) confirmError = null
                 },
-                label = { Text("Password Confirmation") },
+                label = { Text("Confirm Password") },
                 singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
+                ),
                 visualTransformation = PasswordVisualTransformation(),
                 isError = confirmError != null,
                 modifier = Modifier
@@ -219,19 +203,13 @@ fun RegisterScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         keyboard?.hide()
-                        if (validateName() && validateEmail() && validatePassword() && validateConfirm()) {
+                        if (nameError == null && emailError == null && passwordError == null && confirmError == null) {
                             vm.register(name, email, password, onRegisterSuccess)
                         }
                     }
                 )
             )
-            if (confirmError != null)
-                Text(
-                    confirmError!!, color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp)
-                )
+            confirmError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
 
             Spacer(Modifier.height(28.dp))
 
@@ -240,33 +218,27 @@ fun RegisterScreen(
             ) {
                 Text(
                     text = "Already have an account?",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    color = Color.White
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Login",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
-                    ),
+                    color = GreenPrimary,
+                    textDecoration = TextDecoration.Underline,
                     modifier = Modifier.clickable {
-                        if (!loading) navController.navigate(route = NavRoute.Login.route)
+                        if (!loading) navController.navigate(route = NavRoute.Login.route) {
+                            popUpTo(NavRoute.Register.route) { inclusive = true }
+                        }
                     }
                 )
             }
 
             Spacer(Modifier.height(24.dp))
 
-            // BUTTON
             Button(
-                onClick = {
-                    if (validateName() && validateEmail() && validatePassword() && validateConfirm()) {
-                        vm.register(name, email, password, onRegisterSuccess)
-                    }
-                },
+                onClick = { vm.register(name, email, password, onRegisterSuccess) },
                 enabled = !loading,
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -274,11 +246,11 @@ fun RegisterScreen(
                 if (loading) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
-                        modifier = Modifier.size(22.dp)   // 👈 ukuran ideal agar pas di tengah
+                        modifier = Modifier.size(22.dp),
+                        color = Color.White
                     )
                 } else {
-
-                    Text("Register")
+                    Text("Register", color = Color.White)
                 }
             }
 

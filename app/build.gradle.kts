@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.material3)
+    implementation("androidx.compose.material3:material3:1.3.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,6 +64,11 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     implementation("com.google.dagger:hilt-android:2.48")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.compose.material:material-icons-extended")
+
+
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     kapt("com.google.dagger:hilt-compiler:2.48")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

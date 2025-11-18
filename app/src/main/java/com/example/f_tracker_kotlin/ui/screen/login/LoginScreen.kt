@@ -1,5 +1,6 @@
 package com.example.f_tracker_kotlin.ui.screen.login
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -45,6 +50,8 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     vm: LoginViewModel = hiltViewModel()
 ) {
+    val GreenPrimary = Color(0xFF4ADE80)
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -80,6 +87,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFF1B1B1F)) // background gelap
             .padding(24.dp)
     ) {
         Column(
@@ -89,19 +97,20 @@ fun LoginScreen(
             Text(
                 "Welcome Back 👋",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.White
             )
             Text(
                 "Masuk untuk melanjutkan",
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color(0xFFAAAAAA) // sedikit abu-abu
                 )
             )
 
             Spacer(Modifier.height(40.dp))
 
-
             // EMAIL
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
                 value = email,
                 onValueChange = {
                     email = it
@@ -112,6 +121,14 @@ fun LoginScreen(
                 isError = emailError != null,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
+                ),
                 keyboardActions = KeyboardActions(
                     onNext = {
                         if (validateEmail()) passwordFocusRequester.requestFocus()
@@ -131,9 +148,9 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-
             // PASSWORD
             OutlinedTextField(
+                textStyle = TextStyle(color = Color.White),
                 value = password,
                 onValueChange = {
                     password = it
@@ -153,6 +170,14 @@ fun LoginScreen(
                         if (validateEmail() && validatePassword())
                             vm.login(email, password, onLoginSuccess)
                     }
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
+                    unfocusedBorderColor = Color.Gray,       // border default
+                    focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    cursorColor = Color(0xFF4ADE80),         // kursor hijau
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
                 )
             )
             passwordError?.let {
@@ -174,18 +199,22 @@ fun LoginScreen(
                 Text(
                     text = "Don't have an account?",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = Color(0xFFAAAAAA)
                     )
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Register",
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = GreenPrimary,
                         textDecoration = TextDecoration.Underline
                     ),
                     modifier = Modifier.clickable {
-                        if (!loading) navController.navigate(route = NavRoute.Register.route)
+                        if (!loading) navController.navigate(route = NavRoute.Register.route) {
+                            popUpTo(NavRoute.Login.route) {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }
@@ -199,6 +228,10 @@ fun LoginScreen(
                     }
                 },
                 enabled = !loading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = GreenPrimary,
+                    contentColor = Color.White
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -206,7 +239,8 @@ fun LoginScreen(
                 if (loading) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
-                        modifier = Modifier.size(22.dp)   // 👈 ukuran ideal agar pas di tengah
+                        modifier = Modifier.size(22.dp),
+                        color = Color.White
                     )
                 } else {
                     Text("Login")

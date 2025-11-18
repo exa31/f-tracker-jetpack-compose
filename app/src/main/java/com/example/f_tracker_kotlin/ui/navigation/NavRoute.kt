@@ -48,7 +48,9 @@ Bisa menambah fungsi di dalamnya
 Lebih aman dari typo
  */
 sealed class NavRoute(val route: String) {
+    data object Home : NavRoute("home")
     data object Login : NavRoute("login")
     data object Register : NavRoute("register")
+    data object Splash : NavRoute("splash")
 
 }

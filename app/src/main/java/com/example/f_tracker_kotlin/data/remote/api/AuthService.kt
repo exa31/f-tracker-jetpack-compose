@@ -2,6 +2,7 @@ package com.example.f_tracker_kotlin.data.remote.api
 
 import com.example.f_tracker_kotlin.data.remote.dto.AuthResponse
 import com.example.f_tracker_kotlin.data.remote.dto.BaseResponse
+import com.example.f_tracker_kotlin.data.remote.dto.LogoutRequest
 import com.example.f_tracker_kotlin.data.remote.dto.RefreshRequest
 import com.example.f_tracker_kotlin.data.remote.dto.RegisterRequest
 import retrofit2.Call
@@ -27,5 +28,10 @@ interface AuthService {
     suspend fun register(
         @Body request: RegisterRequest
     ): BaseResponse<AuthResponse>
+
+    @POST("auth/v1/logout")
+    suspend fun logout(
+        @Body request: LogoutRequest
+    ): BaseResponse<String>
 
 }

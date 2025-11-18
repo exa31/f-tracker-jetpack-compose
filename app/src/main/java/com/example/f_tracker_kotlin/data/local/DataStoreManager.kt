@@ -133,4 +133,11 @@ class DataStoreManager(private val context: Context) {
         val data = context.dataStore.data.first()
         return data[REFRESH_TOKEN_KEY]
     }
+
+    suspend fun clearTokens() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(TOKEN_KEY)
+            prefs.remove(REFRESH_TOKEN_KEY)
+        }
+    }
 }

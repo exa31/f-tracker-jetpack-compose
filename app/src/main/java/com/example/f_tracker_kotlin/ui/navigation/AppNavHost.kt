@@ -1,11 +1,16 @@
 package com.example.f_tracker_kotlin.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.f_tracker_kotlin.data.model.Transaction
+import com.example.f_tracker_kotlin.ui.screen.home.HomeScreen
 import com.example.f_tracker_kotlin.ui.screen.login.LoginScreen
 import com.example.f_tracker_kotlin.ui.screen.register.RegisterScreen
+import com.example.f_tracker_kotlin.ui.screen.splash.SplashScreen
+import com.example.f_tracker_kotlin.ui.view_model.AuthViewModel
 
 /*
 AppNavHost Fungsi untuk Navigasi Seluruh Screen
@@ -79,9 +84,9 @@ navController.navigate(NavRoute.Home.route) {
  */
 
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = hiltViewModel()) {
 
-    NavHost(navController = navController, startDestination = NavRoute.Login.route) {
+    NavHost(navController = navController, startDestination = NavRoute.Splash.route) {
         /*
         Berikut parameter penting dari fungsi itu:
 
@@ -100,16 +105,35 @@ fun AppNavHost(navController: NavHostController) {
         DetailScreen(id)
         }
          */
+        composable(NavRoute.Splash.route) {
+            SplashScreen(
+                navToHome = {
+                    navController.navigate(NavRoute.Home.route) {
+                        popUpTo(NavRoute.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                navToLogin = {
+                    navController.navigate(NavRoute.Login.route) {
+                        popUpTo(NavRoute.Splash.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                authViewModel = authViewModel
+            )
+        }
+
         composable(NavRoute.Login.route) {
             LoginScreen(
                 navController = navController,
                 onLoginSuccess = {
-                    println("Login Success")
-//                    navController.navigate(NavRoute.Home.route) {
-//                        popUpTo(NavRoute.Login.route) {
-//                            inclusive = true
-//                        } // remove login from backstack
-//                    }
+                    navController.navigate(NavRoute.Home.route) {
+                        popUpTo(NavRoute.Login.route) {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
@@ -118,8 +142,64 @@ fun AppNavHost(navController: NavHostController) {
             RegisterScreen(
                 navController = navController,
                 onRegisterSuccess = {
-                    println("Register Success")
+                    navController.navigate(NavRoute.Home.route) {
+                        popUpTo(NavRoute.Login.route) {
+                            inclusive = true
+                        }
+                    }
                 }
+            )
+        }
+
+        composable(NavRoute.Home.route) {
+            HomeScreen(
+                expense = 1_000_000,
+                income = 2_500_000,
+                onAddClick = {
+                    println("Add Transaction Clicked")
+                },
+                onDeleteClick = {
+                    println("Delete Transaction Clicked")
+                },
+                onEditClick = {
+                    println("Edit Transaction Clicked")
+                },
+                onLogoutSuccess = {
+                    navController.navigate(NavRoute.Login.route) {
+                        popUpTo(NavRoute.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                transactions = mapOf(
+                    "June 22, 2023" to listOf(
+                        Transaction(
+                            id = 1,
+                            amount = 150_000,
+
+                            date = "June 22, 2023",
+                            title = "Groceries",
+                        ),
+                        Transaction(
+                            id = 2,
+                            amount = 200_000,
+                            date = "June 22, 2023",
+                            title = "Electricity Bill",
+                        ),
+                        Transaction(
+                            id = 3,
+                            amount = 50_000,
+                            date = "June 22, 2023",
+                            title = "Transport",
+                        ),
+                        Transaction(
+                            id = 4,
+                            amount = 50_000,
+                            date = "June 12, 2023",
+                            title = "Transport",
+                        ),
+                    )
+                )
             )
         }
     }
