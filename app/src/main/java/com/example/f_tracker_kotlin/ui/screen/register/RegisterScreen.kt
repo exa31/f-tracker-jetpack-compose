@@ -252,7 +252,7 @@ fun RegisterScreen(
                         textDecoration = TextDecoration.Underline
                     ),
                     modifier = Modifier.clickable {
-                        navController.navigate(NavRoute.Login.route)
+                        navController.navigate(route = NavRoute.Login.route)
                     }
                 )
             }
