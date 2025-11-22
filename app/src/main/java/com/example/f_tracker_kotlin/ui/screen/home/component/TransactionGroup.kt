@@ -1,4 +1,4 @@
-package com.example.f_tracker_kotlin.ui.component
+package com.example.f_tracker_kotlin.ui.screen.home.component
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

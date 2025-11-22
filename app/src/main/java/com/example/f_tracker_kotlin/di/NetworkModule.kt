@@ -2,6 +2,7 @@ package com.example.f_tracker_kotlin.di
 
 import com.example.f_tracker_kotlin.data.local.DataStoreManager
 import com.example.f_tracker_kotlin.data.remote.api.AuthService
+import com.example.f_tracker_kotlin.data.remote.api.TransactionService
 import com.example.f_tracker_kotlin.data.remote.interceptor.AuthInterceptor
 import com.example.f_tracker_kotlin.data.remote.interceptor.TokenAuthenticator
 import dagger.Module
@@ -46,6 +47,11 @@ object NetworkModule {
     @Singleton
     fun provideAuthService(retrofit: Retrofit): AuthService =
         retrofit.create(AuthService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTransactionService(retrofit: Retrofit): TransactionService =
+        retrofit.create(TransactionService::class.java)
 
     // Retrofit khusus refresh token (tanpa authenticator & interceptor)
     @Provides

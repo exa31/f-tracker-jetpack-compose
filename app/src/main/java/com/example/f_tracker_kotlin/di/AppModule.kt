@@ -3,7 +3,9 @@ package com.example.f_tracker_kotlin.di
 import android.content.Context
 import com.example.f_tracker_kotlin.data.local.DataStoreManager
 import com.example.f_tracker_kotlin.data.remote.api.AuthService
+import com.example.f_tracker_kotlin.data.remote.api.TransactionService
 import com.example.f_tracker_kotlin.data.repository.AuthRepository
+import com.example.f_tracker_kotlin.data.repository.TransactionRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -174,4 +176,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideAuthRepository(api: AuthService) = AuthRepository(api = api)
+
+    @Provides
+    @Singleton
+    fun provideTransactionRepository(api: TransactionService) = TransactionRepository(api = api)
 }

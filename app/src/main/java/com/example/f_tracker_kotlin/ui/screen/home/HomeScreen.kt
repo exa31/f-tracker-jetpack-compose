@@ -2,6 +2,7 @@ package com.example.f_tracker_kotlin.ui.screen.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,7 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,20 +35,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.f_tracker_kotlin.data.model.Transaction
-import com.example.f_tracker_kotlin.ui.component.SummarySection
-import com.example.f_tracker_kotlin.ui.component.TransactionGroup
+import com.example.f_tracker_kotlin.ui.screen.home.component.SummarySection
+import com.example.f_tracker_kotlin.ui.screen.home.component.TransactionGroup
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    transactions: Map<String, List<Transaction>>,
-    income: Long,
-    expense: Long,
     onAddClick: () -> Unit,
     onEditClick: (Transaction) -> Unit,
     onDeleteClick: (Transaction) -> Unit,
     onLogoutSuccess: () -> Unit,
     vm: HomeViewModel = hiltViewModel()
 ) {
+
+    val income by vm.income.collectAsState()
+    val expanse by vm.expanse.collectAsState()
+    val transactionsByDate by vm.dataByDate.collectAsState()
+    val loading by vm.loading.collectAsState()
+
+    // State buat pull-to-refresh
+    val pullRefreshState = rememberPullToRefreshState()
+
+
     Scaffold(
         modifier = Modifier.background(Color.Black),
         containerColor = Color.Black,
@@ -58,7 +72,7 @@ fun HomeScreen(
         topBar = {
             Surface(
                 shadowElevation = 6.dp,
-                color = Color.Black // ⬅ Hitam
+                color = Color.Black
             ) {
                 Row(
                     modifier = Modifier
@@ -71,53 +85,68 @@ fun HomeScreen(
                         text = "FTracker",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White // ⬅ Putih
+                        color = Color.White
                     )
                     IconButton(
-                        onClick = {
-                            vm.logOut(onSuccess = onLogoutSuccess)
-                        }
+                        onClick = { vm.logOut(onSuccess = onLogoutSuccess) }
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Logout, // Ganti dengan ikon profil yang sesuai
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
                             contentDescription = "Logout",
-                            tint = Color.White // ⬅ Putih,
+                            tint = Color.White
                         )
                     }
                 }
             }
         }
     ) { padding ->
-        Column(
+
+        Box(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .padding(padding)
+                .pullToRefresh(
+                    isRefreshing = loading, onRefresh =
+                        { vm.getTransactions() }, state = pullRefreshState
+                )
         ) {
 
-            SummarySection(income, expense)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        top = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 88.dp // ✨ kasih space biar FAB nggak nutup konten
+                    )
+            ) {
 
-            Spacer(Modifier.height(24.dp))
+                SummarySection(income, expanse)
 
-            Text(
-                "Transactions",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color.White // ⬅ Putih
-            )
+                Spacer(Modifier.height(24.dp))
 
-            Spacer(Modifier.height(12.dp))
-
-            transactions.forEach { (date, items) ->
-                TransactionGroup(
-                    date = date,
-                    items = items,
-                    onEditClick = onEditClick,
-                    onDeleteClick = onDeleteClick,
+                Text(
+                    "Transactions",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
+
                 Spacer(Modifier.height(12.dp))
+
+                transactionsByDate.forEach { (date, items) ->
+                    TransactionGroup(
+                        date = date,
+                        items = items,
+                        onEditClick = onEditClick,
+                        onDeleteClick = onDeleteClick,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
             }
+
         }
     }
 }

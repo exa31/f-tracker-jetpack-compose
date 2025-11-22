@@ -49,6 +49,7 @@ Lebih aman dari typo
  */
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
+    data object TransactionForm : NavRoute("transaction_form")
     data object Login : NavRoute("login")
     data object Register : NavRoute("register")
     data object Splash : NavRoute("splash")

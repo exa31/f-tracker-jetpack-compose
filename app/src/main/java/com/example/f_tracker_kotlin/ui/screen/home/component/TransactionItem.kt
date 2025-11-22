@@ -1,4 +1,4 @@
-package com.example.f_tracker_kotlin.ui.component
+package com.example.f_tracker_kotlin.ui.screen.home.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.f_tracker_kotlin.data.model.Transaction
+import com.example.f_tracker_kotlin.utils.formatCurrency
 
 @Composable
 fun TransactionItem(
@@ -46,12 +47,12 @@ fun TransactionItem(
         ) {
             Column {
                 Text(
-                    transaction.title,
+                    transaction.description,
                     fontWeight = FontWeight.Medium,
                     color = Color.White
                 )
                 Text(
-                    "Rp ${transaction.amount}",
+                    formatCurrency(transaction.amount),
                     color = if (transaction.amount > 0) Color(0xFF00E676) else Color(0xFFE53935),
                     fontWeight = FontWeight.Bold
                 )

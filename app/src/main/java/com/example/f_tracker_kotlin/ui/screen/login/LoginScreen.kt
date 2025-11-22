@@ -122,6 +122,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = Color.Gray,     // label default
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
@@ -172,6 +173,7 @@ fun LoginScreen(
                     }
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = Color.Gray,     // label default
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus

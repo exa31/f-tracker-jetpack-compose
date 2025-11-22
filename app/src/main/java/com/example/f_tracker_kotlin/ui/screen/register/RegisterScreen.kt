@@ -95,6 +95,7 @@ fun RegisterScreen(
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
+                    unfocusedLabelColor = Color.Gray,     // label default
                     cursorColor = Color(0xFF4ADE80),         // kursor hijau
                     errorBorderColor = MaterialTheme.colorScheme.error,
                     errorLabelColor = MaterialTheme.colorScheme.error
@@ -118,6 +119,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 textStyle = TextStyle(color = Color.White),
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = Color.Gray,     // label default
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
@@ -151,6 +153,7 @@ fun RegisterScreen(
             OutlinedTextField(
                 textStyle = TextStyle(color = Color.White),
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = Color.Gray,     // label default
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus
@@ -187,6 +190,7 @@ fun RegisterScreen(
                 label = { Text("Confirm Password") },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = Color.Gray,     // label default
                     focusedBorderColor = Color(0xFF4ADE80), // hijau #4ade80 saat fokus
                     unfocusedBorderColor = Color.Gray,       // border default
                     focusedLabelColor = Color(0xFF4ADE80),   // label hijau saat fokus

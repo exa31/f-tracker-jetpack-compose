@@ -5,11 +5,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.f_tracker_kotlin.data.model.Transaction
 import com.example.f_tracker_kotlin.ui.screen.home.HomeScreen
 import com.example.f_tracker_kotlin.ui.screen.login.LoginScreen
 import com.example.f_tracker_kotlin.ui.screen.register.RegisterScreen
 import com.example.f_tracker_kotlin.ui.screen.splash.SplashScreen
+import com.example.f_tracker_kotlin.ui.screen.transaction_form.TransactionFormScreen
 import com.example.f_tracker_kotlin.ui.view_model.AuthViewModel
 
 /*
@@ -151,18 +151,30 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
             )
         }
 
+        composable(NavRoute.TransactionForm.route) {
+            TransactionFormScreen(
+
+                onSave = { date, description, type, amount ->
+                    println("Save Transaction: $date, $description, $type, $amount")
+                },
+                onClose = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
         composable(NavRoute.Home.route) {
             HomeScreen(
-                expense = 1_000_000,
-                income = 2_500_000,
                 onAddClick = {
                     println("Add Transaction Clicked")
+                    navController.navigate(NavRoute.TransactionForm.route)
                 },
                 onDeleteClick = {
                     println("Delete Transaction Clicked")
                 },
                 onEditClick = {
                     println("Edit Transaction Clicked")
+                    navController.navigate(NavRoute.TransactionForm.route)
                 },
                 onLogoutSuccess = {
                     navController.navigate(NavRoute.Login.route) {
@@ -171,35 +183,6 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
                         }
                     }
                 },
-                transactions = mapOf(
-                    "June 22, 2023" to listOf(
-                        Transaction(
-                            id = 1,
-                            amount = 150_000,
-
-                            date = "June 22, 2023",
-                            title = "Groceries",
-                        ),
-                        Transaction(
-                            id = 2,
-                            amount = 200_000,
-                            date = "June 22, 2023",
-                            title = "Electricity Bill",
-                        ),
-                        Transaction(
-                            id = 3,
-                            amount = 50_000,
-                            date = "June 22, 2023",
-                            title = "Transport",
-                        ),
-                        Transaction(
-                            id = 4,
-                            amount = 50_000,
-                            date = "June 12, 2023",
-                            title = "Transport",
-                        ),
-                    )
-                )
             )
         }
     }
