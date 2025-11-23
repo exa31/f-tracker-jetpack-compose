@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.f_tracker_kotlin"
+    namespace = "cloud.eka_dev.ftracker"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.f_tracker_kotlin"
+        applicationId = "cloud.eka_dev.ftracker"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -20,18 +22,43 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // -----------------------------
+    // LOAD local.properties HERE
+    // -----------------------------
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+
+    if (localPropertiesFile.exists()) {
+        properties.load(localPropertiesFile.inputStream())
+    }
+
+    val apiBaseUrl: String = properties.getProperty("API_BASE_URL") ?: ""
+    val webClientId: String = properties.getProperty("WEB_CLIENT_ID") ?: ""
+    val androidClientId: String = properties.getProperty("ANDROID_CLIENT_ID") ?: ""
+
     buildTypes {
+
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+            buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
+            buildConfigField("String", "ANDROID_CLIENT_ID", "\"$androidClientId\"")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+            buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
+            buildConfigField("String", "ANDROID_CLIENT_ID", "\"$androidClientId\"")
         }
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -74,6 +101,11 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12")
+
+
+    implementation("androidx.credentials:credentials:1.2.2")
+    implementation("androidx.credentials:credentials-play-services-auth:1.2.2")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
 
 
 }
