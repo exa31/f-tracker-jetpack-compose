@@ -154,8 +154,12 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
         composable(NavRoute.TransactionForm.route) {
             TransactionFormScreen(
 
-                onSave = { date, description, type, amount ->
-                    println("Save Transaction: $date, $description, $type, $amount")
+                onSuccess = {
+                    navController.navigate(NavRoute.Home.route) {
+                        popUpTo(NavRoute.Home.route) {
+                            inclusive = true
+                        }
+                    }
                 },
                 onClose = {
                     navController.popBackStack()

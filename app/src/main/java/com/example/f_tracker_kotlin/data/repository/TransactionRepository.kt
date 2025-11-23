@@ -1,7 +1,7 @@
 package com.example.f_tracker_kotlin.data.repository
 
-import com.example.f_tracker_kotlin.data.model.TransactionType
-import com.example.f_tracker_kotlin.data.model.ViewOptions
+import com.example.f_tracker_kotlin.data.enums.TransactionType
+import com.example.f_tracker_kotlin.data.enums.ViewOptions
 import com.example.f_tracker_kotlin.data.remote.api.TransactionService
 import com.example.f_tracker_kotlin.data.remote.dto.CreateTransactionRequest
 import com.example.f_tracker_kotlin.data.remote.dto.UpdateTransactionRequest

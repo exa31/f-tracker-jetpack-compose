@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -27,12 +29,16 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +55,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.f_tracker_kotlin.data.enums.TransactionType
+import com.example.f_tracker_kotlin.utils.formatDateForServer
 import com.example.f_tracker_kotlin.utils.formatToRupiah
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -57,9 +66,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionFormScreen(
-    onSave: (date: String, description: String, type: String, amount: Double) -> Unit,
+    onSuccess: () -> Unit,
     onClose: () -> Unit,
-    vm: TransactionViewModel = TransactionViewModel()
+    vm: TransactionFormViewModel = hiltViewModel()
 ) {
     var date by remember {
         mutableStateOf(
@@ -80,13 +89,15 @@ fun TransactionFormScreen(
     var isAmountFocused by remember { mutableStateOf(false) }
 
 
-    val transactionTypes = listOf("Income", "Expense")
+    val transactionTypes = TransactionType.entries.map { it.label }
     var expanded by remember { mutableStateOf(false) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = System.currentTimeMillis()
     )
+
+    val loading by vm.loading.collectAsState()
 
 
     val GreenPrimary = Color(0xFF4ADE80)
@@ -122,6 +133,16 @@ fun TransactionFormScreen(
         return valid
     }
 
+    val vm: TransactionFormViewModel = hiltViewModel()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        vm.snackbarMessage.collect { msg ->
+            snackbarHostState.showSnackbar(msg)
+        }
+    }
+
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -151,6 +172,7 @@ fun TransactionFormScreen(
 
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Row(
                 modifier = Modifier
@@ -416,10 +438,17 @@ fun TransactionFormScreen(
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                val amt = amountField.text
-                                    .replace("[^\\d]".toRegex(), "")
-                                    .toDoubleOrNull() ?: 0.0
-                                onSave(date, description, type, amt)
+                                // Close keyboard
+                                if (!validate()) return@KeyboardActions
+                                val amt = amountField.text.replace("[^\\d]".toRegex(), "").toInt()
+
+                                vm.addTransaction(
+                                    formatDateForServer(date),
+                                    description,
+                                    TransactionType.valueOf(type.uppercase()),
+                                    amt,
+                                    onSuccess = onSuccess
+                                )
                             }
                         ),
                         colors = TextFieldDefaults.colors(
@@ -454,15 +483,30 @@ fun TransactionFormScreen(
 
                     if (!validate()) return@Button
 
-                    val amt = amountField.text.replace("[^\\d]".toRegex(), "").toDouble()
+                    val amt = amountField.text.replace("[^\\d]".toRegex(), "").toInt()
 
-                    onSave(date, description, type, amt)
+                    vm.addTransaction(
+                        formatDateForServer(date),
+                        description,
+                        TransactionType.valueOf(type.uppercase()),
+                        amt,
+                        onSuccess = onSuccess
+                    )
 
                 },
+                enabled = !loading,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
             ) {
-                Text("Save", color = Color.White)
+                if (loading) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(22.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text("Save", color = Color.White)
+                }
             }
         }
     }

@@ -2,9 +2,9 @@ package com.example.f_tracker_kotlin.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.f_tracker_kotlin.data.enums.ViewOptions
 import com.example.f_tracker_kotlin.data.local.DataStoreManager
 import com.example.f_tracker_kotlin.data.model.Transaction
-import com.example.f_tracker_kotlin.data.model.ViewOptions
 import com.example.f_tracker_kotlin.data.repository.AuthRepository
 import com.example.f_tracker_kotlin.data.repository.TransactionRepository
 import com.example.f_tracker_kotlin.utils.formatDate

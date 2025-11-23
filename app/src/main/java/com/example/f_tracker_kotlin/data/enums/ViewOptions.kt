@@ -1,4 +1,4 @@
-package com.example.f_tracker_kotlin.data.model
+package com.example.f_tracker_kotlin.data.enums
 
 enum class ViewOptions(val label: String) {
     DAY("Day"),

@@ -1,5 +1,6 @@
 package com.example.f_tracker_kotlin.utils
 
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 // Function to format date from ISO 8601 to "Friday, 21 November 2025" format
@@ -17,4 +18,11 @@ fun formatDate(dateString: String): String {
     } else {
         ""
     }
+}
+
+fun formatDateForServer(date: String): String {
+    val inputFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val parsedDate = inputFormat.parse(date)
+    return outputFormat.format(parsedDate!!)
 }
