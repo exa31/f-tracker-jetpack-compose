@@ -5,10 +5,13 @@ import androidx.lifecycle.viewModelScope
 import cloud.eka_dev.ftracker.data.enums.ViewOptions
 import cloud.eka_dev.ftracker.data.local.DataStoreManager
 import cloud.eka_dev.ftracker.data.model.Transaction
+import cloud.eka_dev.ftracker.data.remote.dto.BaseResponse
 import cloud.eka_dev.ftracker.data.repository.AuthRepository
 import cloud.eka_dev.ftracker.data.repository.TransactionRepository
 import cloud.eka_dev.ftracker.utils.formatDate
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -39,6 +42,9 @@ class HomeViewModel @Inject constructor(
 
     private val _loadingProggres = MutableStateFlow(false)
     val loadingProggress: StateFlow<Boolean> = _loadingProggres
+
+    private val _snackbarMessage = MutableSharedFlow<String>()
+    val snackbarMessage = _snackbarMessage
 
     init {
         getTransactions()
@@ -81,8 +87,20 @@ class HomeViewModel @Inject constructor(
                 _expanse.value = expanseTotal.toLong()
 
 
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val errorMessage = try {
+                    Gson().fromJson(errorBody, BaseResponse::class.java).message
+                } catch (e: Exception) {
+                    "An error occurred"
+                }
+                println("HTTP Error: $errorMessage")
+                _snackbarMessage.emit(errorMessage)
+            } catch (_: java.net.SocketTimeoutException) {
+                _snackbarMessage.emit("Request timed out. Please try again.")
             } catch (e: Exception) {
-                e.printStackTrace()
+                println("Error: ${e.localizedMessage}")
+                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
             } finally {
                 _loading.value = false
             }
