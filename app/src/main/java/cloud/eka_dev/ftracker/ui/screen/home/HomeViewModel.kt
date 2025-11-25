@@ -30,6 +30,9 @@ class HomeViewModel @Inject constructor(
     private val _data = MutableStateFlow<List<Transaction>>(emptyList())
     val data: StateFlow<List<Transaction>> = _data
 
+    private val _selectedView = MutableStateFlow(ViewOptions.MONTH)
+    val selectedView: StateFlow<ViewOptions> = _selectedView
+
     private val _dataByDate = MutableStateFlow<Map<String, List<Transaction>>>(emptyMap())
     val dataByDate: StateFlow<Map<String, List<Transaction>>> = _dataByDate
 
@@ -84,11 +87,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun getTransactions() {
+    fun getTransactions(viewOptions: ViewOptions = ViewOptions.MONTH) {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val transactions = transactionRepo.getTransactions(ViewOptions.MONTH)
+                val transactions = transactionRepo.getTransactions(view = viewOptions)
                 // Handle transactions
                 val mappedCurrent = Transaction.fromDtoCurrent(data = transactions.data)
                 _data.value = mappedCurrent
@@ -154,9 +157,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun onViewOptionChange(viewOptions: ViewOptions) {
+        _selectedView.value = viewOptions
+        getTransactions(viewOptions)
+    }
+
     fun handleRefresh() {
         _isRefreshing.value = true
-        getTransactions()
+        getTransactions(_selectedView.value)
     }
 
     fun deleteTransaction() {

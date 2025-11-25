@@ -42,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import cloud.eka_dev.ftracker.data.model.Transaction
 import cloud.eka_dev.ftracker.ui.screen.home.component.SummarySection
 import cloud.eka_dev.ftracker.ui.screen.home.component.SummarySectionSkeleton
+import cloud.eka_dev.ftracker.ui.screen.home.component.TransactionFilterTabs
 import cloud.eka_dev.ftracker.ui.screen.home.component.TransactionGroup
 import cloud.eka_dev.ftracker.ui.screen.home.component.TransactionSkeleton
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -66,6 +67,7 @@ fun HomeScreen(
     val loading by vm.loading.collectAsState()
     val loadingProggres by vm.loadingProggress.collectAsState()
     val isRefreshing by vm.isRefreshing.collectAsState()
+    val selectedView by vm.selectedView.collectAsState()
 
     var showConfirmDialog by remember { mutableStateOf(false) }
 
@@ -209,6 +211,13 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+
+
+                    Spacer(Modifier.height(12.dp))
+
+                    TransactionFilterTabs(selected = selectedView, onSelect = {
+                        vm.onViewOptionChange(it)
+                    })
 
                     Spacer(Modifier.height(12.dp))
 
