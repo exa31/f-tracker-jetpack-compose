@@ -39,9 +39,14 @@ class HomeViewModel @Inject constructor(
     private val _expanse = MutableStateFlow(0L)
     val expanse: StateFlow<Long> = _expanse
 
+    private val _id = MutableStateFlow<String?>(null)
+    val id: StateFlow<String?> = _id
 
     private val _loadingProggres = MutableStateFlow(false)
     val loadingProggress: StateFlow<Boolean> = _loadingProggres
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage
@@ -103,9 +108,51 @@ class HomeViewModel @Inject constructor(
                 _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
             } finally {
                 _loading.value = false
+                _isRefreshing.value = false
             }
         }
+    }
 
+    fun handleRefresh() {
+        _isRefreshing.value = true
+        getTransactions()
+    }
+
+    fun deleteTransaction() {
+        viewModelScope.launch {
+            _loadingProggres.value = true
+            val transactionId = _id.value
+            try {
+                if (transactionId != null) {
+                    transactionRepo.deleteTransaction(transactionId)
+                    _snackbarMessage.emit("Transaction deleted successfully")
+                    getTransactions()
+                } else {
+                    _snackbarMessage.emit("Invalid transaction ID")
+                }
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val errorMessage = try {
+                    Gson().fromJson(errorBody, BaseResponse::class.java).message
+                } catch (e: Exception) {
+                    "An error occurred"
+                }
+                println("HTTP Error: $errorMessage")
+                _snackbarMessage.emit(errorMessage)
+            } catch (_: java.net.SocketTimeoutException) {
+                _snackbarMessage.emit("Request timed out. Please try again.")
+            } catch (e: Exception) {
+                println("Error: ${e.localizedMessage}")
+                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
+            } finally {
+                _loadingProggres.value = false
+                _id.value = null
+            }
+        }
+    }
+
+    fun onDeleteClick(transaction: Transaction) {
+        _id.value = transaction._id
     }
 
 }

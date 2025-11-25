@@ -198,9 +198,6 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
                     println("Add Transaction Clicked")
                     navController.navigate(NavRoute.AddTransaction.route)
                 },
-                onDeleteClick = {
-                    println("Delete Transaction Clicked")
-                },
                 onEditClick = {
                     println("Edit Transaction Clicked")
                     navController.navigate(NavRoute.EditTransaction.createRoute(transactionId = it._id))

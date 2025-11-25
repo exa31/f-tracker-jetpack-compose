@@ -8,26 +8,32 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +52,6 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 fun HomeScreen(
     onAddClick: () -> Unit,
     onEditClick: (Transaction) -> Unit,
-    onDeleteClick: (Transaction) -> Unit,
     onLogoutSuccess: () -> Unit,
     vm: HomeViewModel = hiltViewModel()
 ) {
@@ -55,9 +60,11 @@ fun HomeScreen(
     val expanse by vm.expanse.collectAsState()
     val transactionsByDate by vm.dataByDate.collectAsState()
     val loading by vm.loading.collectAsState()
+    val loadingProggres by vm.loadingProggress.collectAsState()
+    val isRefreshing by vm.isRefreshing.collectAsState()
 
-    // State buat pull-to-refresh
-    val pullRefreshState = rememberPullToRefreshState()
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -67,9 +74,52 @@ fun HomeScreen(
         }
     }
 
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = {
+                Text(
+                    text = "Delete Transaction",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete this transaction? This action cannot be undone.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        vm.deleteTransaction()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { showConfirmDialog = false },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+
     SwipeRefresh(
-        state = rememberSwipeRefreshState(loading),
-        onRefresh = { vm.getTransactions() },
+        state = rememberSwipeRefreshState(isRefreshing = isRefreshing),
+        onRefresh = {
+            vm.handleRefresh()
+        },
     ) {
         Scaffold(
             snackbarHost = {
@@ -164,7 +214,11 @@ fun HomeScreen(
                                 date = date,
                                 items = items,
                                 onEditClick = onEditClick,
-                                onDeleteClick = onDeleteClick,
+                                onDeleteClick = {
+                                    if (loadingProggres) return@TransactionGroup
+                                    vm.onDeleteClick(it)
+                                    showConfirmDialog = true
+                                },
                             )
                             Spacer(Modifier.height(12.dp))
                         }
