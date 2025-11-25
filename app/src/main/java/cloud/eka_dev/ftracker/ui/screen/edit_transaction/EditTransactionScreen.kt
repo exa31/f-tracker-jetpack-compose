@@ -1,8 +1,9 @@
-package cloud.eka_dev.ftracker.ui.screen.transaction_form
+package cloud.eka_dev.ftracker.ui.screen.edit_transaction
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -54,7 +56,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -67,20 +69,16 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionFormScreen(
+fun EditTransactionScreen(
     onSuccess: () -> Unit,
     onClose: () -> Unit,
-    vm: TransactionFormViewModel = hiltViewModel()
+    vm: EditTransactionViewModel = hiltViewModel()
 ) {
-    var date by remember {
-        mutableStateOf(
-            SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-        )
-    }
+    val date by vm.date.collectAsState()
     var textFieldWidth by remember { mutableStateOf(0) }
-    var description by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("") }
-    var amountField by remember { mutableStateOf(TextFieldValue("")) }
+    val description by vm.description.collectAsState()
+    val type by vm.type.collectAsState()
+    val amount by vm.amount.collectAsState()
 
     var descriptionError by remember { mutableStateOf("") }
     var typeError by remember { mutableStateOf("") }
@@ -101,6 +99,7 @@ fun TransactionFormScreen(
 
     val loading by vm.loading.collectAsState()
 
+    val notFound by vm.notFound.collectAsState()
 
     val GreenPrimary = Color(0xFF4ADE80)
 
@@ -124,7 +123,7 @@ fun TransactionFormScreen(
         }
 
         // Amount
-        val amt = amountField.text.replace("[^\\d]".toRegex(), "").toLongOrNull() ?: 0
+        val amt = amount.text.replace("[^\\d]".toRegex(), "").toIntOrNull() ?: 0
         if (amt <= 0) {
             amountError = "Amount must be greater than 0"
             valid = false
@@ -152,8 +151,10 @@ fun TransactionFormScreen(
                     onClick = {
                         val selectedMillis = datePickerState.selectedDateMillis
                         if (selectedMillis != null) {
-                            date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                .format(Date(selectedMillis))
+                            vm.onDateChange(
+                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                                    .format(Date(selectedMillis))
+                            )
                         }
                         showDatePicker = false
                     }
@@ -171,8 +172,71 @@ fun TransactionFormScreen(
         }
     }
 
+    if (loading) {
 
-    Scaffold(
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0x80000000)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(50.dp),
+                color = Color.White
+            )
+        }
+    } else if (notFound) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFF121212)) // background hitam gelap
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Box(
+                modifier = Modifier
+                    .background(Color(0xFF1E1E1E), shape = RoundedCornerShape(12.dp)) // card gelap
+                    .border(1.dp, Color(0xFF2A2A2A), RoundedCornerShape(12.dp))
+                    .padding(24.dp)
+            ) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        "Transaction not found",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        "The requested transaction was not found. It may have been deleted or is unavailable.",
+                        color = Color(0xFFBBBBBB),
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Button(
+                        onClick = { onClose() },
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                    ) {
+                        Text("Back", color = Color.White)
+                    }
+                }
+            }
+        }
+        return
+    } else Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
@@ -280,7 +344,7 @@ fun TransactionFormScreen(
                 ) {
                     TextField(
                         value = description,
-                        onValueChange = { description = it },
+                        onValueChange = { vm.onDescriptionChange(it) },
                         placeholder = { Text("Enter description", color = Color.Gray) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
@@ -368,7 +432,7 @@ fun TransactionFormScreen(
                             DropdownMenuItem(
                                 text = { Text(t, color = Color.White) },
                                 onClick = {
-                                    type = t
+                                    vm.onTypeChange(t)
                                     expanded = false
                                 }
                             )
@@ -407,7 +471,7 @@ fun TransactionFormScreen(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     TextField(
-                        value = amountField,
+                        value = amount,
                         onValueChange = { newValue ->
                             // Ambil angka mentah (tanpa Rp dan titik)
                             val clean = newValue.text.replace("[^\\d]".toRegex(), "")
@@ -420,9 +484,11 @@ fun TransactionFormScreen(
                             }
 
                             // Update state dengan cursor di paling akhir
-                            amountField = amountField.copy(
-                                text = formatted,
-                                selection = TextRange(formatted.length) // cursor ke ujung
+                            vm.onAmountChange(
+                                amount.copy(
+                                    text = formatted,
+                                    selection = TextRange(formatted.length) // cursor ke ujung
+                                )
                             )
                         },
                         placeholder = { Text("Enter amount", color = Color.Gray) },
@@ -434,9 +500,9 @@ fun TransactionFormScreen(
                             onDone = {
                                 // Close keyboard
                                 if (!validate()) return@KeyboardActions
-                                val amt = amountField.text.replace("[^\\d]".toRegex(), "").toInt()
+                                val amt = amount.text.replace("[^\\d]".toRegex(), "").toInt()
 
-                                vm.addTransaction(
+                                vm.updateTransaction(
                                     formatDateForServer(date),
                                     description,
                                     TransactionType.valueOf(type.uppercase()),
@@ -477,9 +543,9 @@ fun TransactionFormScreen(
 
                     if (!validate()) return@Button
 
-                    val amt = amountField.text.replace("[^\\d]".toRegex(), "").toInt()
+                    val amt = amount.text.replace("[^\\d]".toRegex(), "").toInt()
 
-                    vm.addTransaction(
+                    vm.updateTransaction(
                         formatDateForServer(date),
                         description,
                         TransactionType.valueOf(type.uppercase()),

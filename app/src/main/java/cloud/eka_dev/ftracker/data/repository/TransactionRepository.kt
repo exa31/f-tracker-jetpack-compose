@@ -13,6 +13,9 @@ class TransactionRepository @Inject constructor(
     suspend fun getTransactions(view: ViewOptions) =
         api.getTransactions(view = view.label)
 
+    suspend fun getTransactionDetail(id: String) =
+        api.getTransactionDetail(transactionId = id)
+
     suspend fun createTransaction(
         amount: Int,
         createdAt: String,

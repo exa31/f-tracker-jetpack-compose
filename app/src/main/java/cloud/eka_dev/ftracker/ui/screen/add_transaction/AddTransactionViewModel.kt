@@ -1,4 +1,4 @@
-package cloud.eka_dev.ftracker.ui.screen.transaction_form
+package cloud.eka_dev.ftracker.ui.screen.add_transaction
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 @HiltViewModel
-class TransactionFormViewModel @Inject constructor(
+class AddTransactionViewModel @Inject constructor(
     private val repo: TransactionRepository,
 ) : ViewModel() {
     private val _loading = MutableStateFlow(false)

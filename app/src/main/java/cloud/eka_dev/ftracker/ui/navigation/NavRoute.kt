@@ -49,7 +49,14 @@ Lebih aman dari typo
  */
 sealed class NavRoute(val route: String) {
     data object Home : NavRoute("home")
-    data object TransactionForm : NavRoute("transaction_form")
+    data object AddTransaction : NavRoute("add-transaction")
+
+    data object EditTransaction : NavRoute("edit-transaction?transactionId={transactionId}") {
+        fun createRoute(transactionId: String): String {
+            return "edit-transaction?transactionId=$transactionId"
+        }
+    }
+
     data object Login : NavRoute("login")
     data object Register : NavRoute("register")
     data object Splash : NavRoute("splash")

@@ -73,7 +73,7 @@ class HomeViewModel @Inject constructor(
             try {
                 val transactions = transactionRepo.getTransactions(ViewOptions.MONTH)
                 // Handle transactions
-                val mappedCurrent = Transaction.Companion.fromDtoCurrent(data = transactions.data)
+                val mappedCurrent = Transaction.fromDtoCurrent(data = transactions.data)
                 _data.value = mappedCurrent
                 _dataByDate.value = mappedCurrent.groupBy { formatDate(it.createdAt) }
 

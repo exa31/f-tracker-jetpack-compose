@@ -5,11 +5,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import cloud.eka_dev.ftracker.ui.screen.add_transaction.AddTransactionScreen
+import cloud.eka_dev.ftracker.ui.screen.edit_transaction.EditTransactionScreen
 import cloud.eka_dev.ftracker.ui.screen.home.HomeScreen
 import cloud.eka_dev.ftracker.ui.screen.login.LoginScreen
 import cloud.eka_dev.ftracker.ui.screen.register.RegisterScreen
 import cloud.eka_dev.ftracker.ui.screen.splash.SplashScreen
-import cloud.eka_dev.ftracker.ui.screen.transaction_form.TransactionFormScreen
 import cloud.eka_dev.ftracker.ui.view_model.AuthViewModel
 
 /*
@@ -151,9 +153,8 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
             )
         }
 
-        composable(NavRoute.TransactionForm.route) {
-            TransactionFormScreen(
-
+        composable(NavRoute.AddTransaction.route) {
+            AddTransactionScreen(
                 onSuccess = {
                     navController.navigate(NavRoute.Home.route) {
                         popUpTo(NavRoute.Home.route) {
@@ -167,18 +168,42 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
             )
         }
 
+        composable(
+            route = NavRoute.EditTransaction.route, arguments = listOf(
+                navArgument("transactionId") {
+                    defaultValue = ""
+                    type = androidx.navigation.NavType.StringType
+                    nullable = false
+                }
+            )
+        ) {
+            EditTransactionScreen(
+                onSuccess = {
+                    navController.navigate(NavRoute.Home.route) {
+                        popUpTo(NavRoute.Home.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onClose = {
+                    navController.popBackStack()
+                }
+            )
+
+        }
+
         composable(NavRoute.Home.route) {
             HomeScreen(
                 onAddClick = {
                     println("Add Transaction Clicked")
-                    navController.navigate(NavRoute.TransactionForm.route)
+                    navController.navigate(NavRoute.AddTransaction.route)
                 },
                 onDeleteClick = {
                     println("Delete Transaction Clicked")
                 },
                 onEditClick = {
                     println("Edit Transaction Clicked")
-                    navController.navigate(NavRoute.TransactionForm.route)
+                    navController.navigate(NavRoute.EditTransaction.createRoute(transactionId = it._id))
                 },
                 onLogoutSuccess = {
                     navController.navigate(NavRoute.Login.route) {
