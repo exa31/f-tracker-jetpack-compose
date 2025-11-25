@@ -36,6 +36,15 @@ android {
     val webClientId: String = properties.getProperty("WEB_CLIENT_ID") ?: ""
     val androidClientId: String = properties.getProperty("ANDROID_CLIENT_ID") ?: ""
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("../my-release-key.jks") // path ke keystore
+            storePassword = "android"
+            keyAlias = "ftracker"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
 
         debug {
@@ -53,6 +62,7 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
             buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
             buildConfigField("String", "ANDROID_CLIENT_ID", "\"$androidClientId\"")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
