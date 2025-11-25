@@ -124,8 +124,8 @@ fun EditTransactionScreen(
 
         // Amount
         val amt = amount.text.replace("[^\\d]".toRegex(), "").toIntOrNull() ?: 0
-        if (amt <= 0) {
-            amountError = "Amount must be greater than 0"
+        if (amt <= 1000) {
+            amountError = "Amount must be greater than Rp 1,000"
             valid = false
         } else {
             amountError = ""

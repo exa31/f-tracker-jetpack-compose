@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.navigation.compose.rememberNavController
+import cloud.eka_dev.ftracker.data.connectivity.ConnectivityObserver
+import cloud.eka_dev.ftracker.data.connectivity.NetworkConnectivityObserver
 import cloud.eka_dev.ftracker.ui.navigation.AppNavHost
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -96,15 +98,21 @@ Tahap	Keterangan
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private lateinit var connectivityObserver: ConnectivityObserver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        connectivityObserver = NetworkConnectivityObserver(applicationContext)
 
         setContent {
             MaterialTheme {
                 Surface {
                     val navController = rememberNavController()
                     Surface {
-                        AppNavHost(navController = navController)
+                        AppNavHost(
+                            navController = navController,
+                            connectivityObserver = connectivityObserver
+                        )
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package cloud.eka_dev.ftracker.ui.screen.login
 
+import android.util.Log
 import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -201,7 +202,7 @@ class LoginViewModel @Inject constructor(
             } catch (_: SocketTimeoutException) {
                 _error.value = "Koneksi bermasalah, silakan coba lagi."
             } catch (e: Exception) {
-                _error.value = e.message
+                Log.e("LoginViewModel", "loginWithGoogle: ", e)
             } finally {
                 _loading.value = false
             }

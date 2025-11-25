@@ -1,5 +1,6 @@
 package cloud.eka_dev.ftracker.ui.screen.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.eka_dev.ftracker.data.enums.ViewOptions
@@ -148,8 +149,7 @@ class HomeViewModel @Inject constructor(
             } catch (_: java.net.SocketTimeoutException) {
                 _snackbarMessage.emit("Request timed out. Please try again.")
             } catch (e: Exception) {
-                println("Error: ${e.localizedMessage}")
-                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
+                Log.e("HomeViewModel", "getTransactions: ", e)
             } finally {
                 _loading.value = false
                 _isRefreshing.value = false
@@ -191,8 +191,8 @@ class HomeViewModel @Inject constructor(
             } catch (_: java.net.SocketTimeoutException) {
                 _snackbarMessage.emit("Request timed out. Please try again.")
             } catch (e: Exception) {
-                println("Error: ${e.localizedMessage}")
-                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
+                Log.e("HomeViewModel", "deleteTransaction: ", e)
+
             } finally {
                 _loadingProggres.value = false
                 _id.value = null

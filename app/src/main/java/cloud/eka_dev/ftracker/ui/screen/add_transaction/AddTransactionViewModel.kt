@@ -1,5 +1,6 @@
 package cloud.eka_dev.ftracker.ui.screen.add_transaction
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.eka_dev.ftracker.data.enums.TransactionType
@@ -54,8 +55,7 @@ class AddTransactionViewModel @Inject constructor(
             } catch (_: SocketTimeoutException) {
                 _snackbarMessage.emit("Request timed out. Please try again.")
             } catch (e: Exception) {
-                println("Error: ${e.localizedMessage}")
-                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
+                Log.e("AddTransactionViewModel", "addTransaction: ", e)
             } finally {
                 _loading.value = false
             }

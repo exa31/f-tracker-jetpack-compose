@@ -1,5 +1,6 @@
 package cloud.eka_dev.ftracker.ui.screen.edit_transaction
 
+import android.util.Log
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -136,8 +137,7 @@ class EditTransactionViewModel @Inject constructor(
             } catch (_: SocketTimeoutException) {
                 _snackbarMessage.emit("Request timed out. Please try again.")
             } catch (e: Exception) {
-                println("Error: ${e.localizedMessage}")
-                _snackbarMessage.emit(e.localizedMessage ?: "An error occurred")
+                Log.e("EditTransactionViewModel", "updateTransaction: ", e)
             } finally {
                 _loading.value = false
             }

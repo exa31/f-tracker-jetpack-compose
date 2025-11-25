@@ -1,5 +1,6 @@
 package cloud.eka_dev.ftracker.ui.screen.register
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.eka_dev.ftracker.data.local.DataStoreManager
@@ -165,7 +166,7 @@ class RegisterViewModel @Inject constructor(
             } catch (e: SocketTimeoutException) {
                 _error.value = "Koneksi bermasalah, silakan coba lagi."
             } catch (e: Exception) {
-                _error.value = e.message
+                Log.e("RegisterViewModel", "register: ", e)
             } finally {
                 _loading.value = false
             }

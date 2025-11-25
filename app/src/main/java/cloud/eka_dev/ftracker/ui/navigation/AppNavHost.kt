@@ -1,15 +1,22 @@
 package cloud.eka_dev.ftracker.ui.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import cloud.eka_dev.ftracker.data.connectivity.ConnectivityObserver
 import cloud.eka_dev.ftracker.ui.screen.add_transaction.AddTransactionScreen
 import cloud.eka_dev.ftracker.ui.screen.edit_transaction.EditTransactionScreen
 import cloud.eka_dev.ftracker.ui.screen.home.HomeScreen
 import cloud.eka_dev.ftracker.ui.screen.login.LoginScreen
+import cloud.eka_dev.ftracker.ui.screen.no_internet.NoInternetBanner
 import cloud.eka_dev.ftracker.ui.screen.register.RegisterScreen
 import cloud.eka_dev.ftracker.ui.screen.splash.SplashScreen
 import cloud.eka_dev.ftracker.ui.view_model.AuthViewModel
@@ -86,10 +93,18 @@ navController.navigate(NavRoute.Home.route) {
  */
 
 @Composable
-fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = hiltViewModel()) {
+fun AppNavHost(
+    navController: NavHostController,
+    authViewModel: AuthViewModel = hiltViewModel(),
+    connectivityObserver: ConnectivityObserver
+) {
 
-    NavHost(navController = navController, startDestination = NavRoute.Splash.route) {
-        /*
+    val status by connectivityObserver.observe()
+        .collectAsState(initial = ConnectivityObserver.Status.Unavailable)
+
+    Box {
+        NavHost(navController = navController, startDestination = NavRoute.Splash.route) {
+            /*
         Berikut parameter penting dari fungsi itu:
 
         Parameter	Fungsi
@@ -107,109 +122,119 @@ fun AppNavHost(navController: NavHostController, authViewModel: AuthViewModel = 
         DetailScreen(id)
         }
          */
-        composable(NavRoute.Splash.route) {
-            SplashScreen(
-                navToHome = {
-                    navController.navigate(NavRoute.Home.route) {
-                        popUpTo(NavRoute.Splash.route) {
-                            inclusive = true
+            composable(NavRoute.Splash.route) {
+                SplashScreen(
+                    navToHome = {
+                        navController.navigate(NavRoute.Home.route) {
+                            popUpTo(NavRoute.Splash.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    navToLogin = {
+                        navController.navigate(NavRoute.Login.route) {
+                            popUpTo(NavRoute.Splash.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    authViewModel = authViewModel
+                )
+            }
+
+            composable(NavRoute.Login.route) {
+                LoginScreen(
+                    navController = navController,
+                    onLoginSuccess = {
+                        navController.navigate(NavRoute.Home.route) {
+                            popUpTo(NavRoute.Login.route) {
+                                inclusive = true
+                            }
                         }
                     }
-                },
-                navToLogin = {
-                    navController.navigate(NavRoute.Login.route) {
-                        popUpTo(NavRoute.Splash.route) {
-                            inclusive = true
+                )
+            }
+
+            composable(NavRoute.Register.route) {
+                RegisterScreen(
+                    navController = navController,
+                    onRegisterSuccess = {
+                        navController.navigate(NavRoute.Home.route) {
+                            popUpTo(NavRoute.Login.route) {
+                                inclusive = true
+                            }
                         }
                     }
-                },
-                authViewModel = authViewModel
-            )
+                )
+            }
+
+            composable(NavRoute.AddTransaction.route) {
+                AddTransactionScreen(
+                    onSuccess = {
+                        navController.navigate(NavRoute.Home.route) {
+                            popUpTo(NavRoute.Home.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    onClose = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(
+                route = NavRoute.EditTransaction.route, arguments = listOf(
+                    navArgument("transactionId") {
+                        defaultValue = ""
+                        type = androidx.navigation.NavType.StringType
+                        nullable = false
+                    }
+                )
+            ) {
+                EditTransactionScreen(
+                    onSuccess = {
+                        navController.navigate(NavRoute.Home.route) {
+                            popUpTo(NavRoute.Home.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    onClose = {
+                        navController.popBackStack()
+                    }
+                )
+
+            }
+
+            composable(NavRoute.Home.route) {
+                HomeScreen(
+                    onAddClick = {
+                        println("Add Transaction Clicked")
+                        navController.navigate(NavRoute.AddTransaction.route)
+                    },
+                    onEditClick = {
+                        println("Edit Transaction Clicked")
+                        navController.navigate(NavRoute.EditTransaction.createRoute(transactionId = it._id))
+                    },
+                    onLogoutSuccess = {
+                        navController.navigate(NavRoute.Login.route) {
+                            popUpTo(NavRoute.Home.route) {
+                                inclusive = true
+                            }
+                        }
+                    },
+                )
+            }
         }
 
-        composable(NavRoute.Login.route) {
-            LoginScreen(
-                navController = navController,
-                onLoginSuccess = {
-                    navController.navigate(NavRoute.Home.route) {
-                        popUpTo(NavRoute.Login.route) {
-                            inclusive = true
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(NavRoute.Register.route) {
-            RegisterScreen(
-                navController = navController,
-                onRegisterSuccess = {
-                    navController.navigate(NavRoute.Home.route) {
-                        popUpTo(NavRoute.Login.route) {
-                            inclusive = true
-                        }
-                    }
-                }
-            )
-        }
-
-        composable(NavRoute.AddTransaction.route) {
-            AddTransactionScreen(
-                onSuccess = {
-                    navController.navigate(NavRoute.Home.route) {
-                        popUpTo(NavRoute.Home.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-                onClose = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            route = NavRoute.EditTransaction.route, arguments = listOf(
-                navArgument("transactionId") {
-                    defaultValue = ""
-                    type = androidx.navigation.NavType.StringType
-                    nullable = false
-                }
-            )
-        ) {
-            EditTransactionScreen(
-                onSuccess = {
-                    navController.navigate(NavRoute.Home.route) {
-                        popUpTo(NavRoute.Home.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-                onClose = {
-                    navController.popBackStack()
-                }
+        if (status != ConnectivityObserver.Status.Available) {
+            NoInternetBanner(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
             )
 
-        }
 
-        composable(NavRoute.Home.route) {
-            HomeScreen(
-                onAddClick = {
-                    println("Add Transaction Clicked")
-                    navController.navigate(NavRoute.AddTransaction.route)
-                },
-                onEditClick = {
-                    println("Edit Transaction Clicked")
-                    navController.navigate(NavRoute.EditTransaction.createRoute(transactionId = it._id))
-                },
-                onLogoutSuccess = {
-                    navController.navigate(NavRoute.Login.route) {
-                        popUpTo(NavRoute.Home.route) {
-                            inclusive = true
-                        }
-                    }
-                },
-            )
         }
     }
 }
