@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import cloud.eka_dev.ftracker.data.enums.TransactionType
 import cloud.eka_dev.ftracker.data.remote.dto.BaseResponse
 import cloud.eka_dev.ftracker.data.repository.TransactionRepository
+import cloud.eka_dev.ftracker.utils.formatToRupiah
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -79,7 +80,7 @@ class EditTransactionViewModel @Inject constructor(
                     )!!
                 )
                 _description.value = data.description
-                _amount.value = TextFieldValue(data.amount.toString())
+                _amount.value = TextFieldValue(formatToRupiah(data.amount.toString()))
                 _type.value = data.type
             } catch (e: HttpException) {
                 if (e.code() == 404) {
@@ -115,11 +116,12 @@ class EditTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             _loading.value = true
             try {
-                repo.createTransaction(
+                repo.updateTransaction(
                     createdAt = date,
                     description = description,
                     type = type,
-                    amount = amount
+                    amount = amount,
+                    id = transactionId!!
                 )
                 onSuccess()
             } catch (e: HttpException) {

@@ -31,7 +31,7 @@ interface TransactionService {
     suspend fun updateTransaction(
         @Path("transactionId") transactionId: String,
         @Body request: UpdateTransactionRequest
-    ): BaseResponse<String>
+    ): BaseResponse<Objects>
 
     @DELETE("/api/v1/transactions/{transactionId}")
     suspend fun deleteTransaction(

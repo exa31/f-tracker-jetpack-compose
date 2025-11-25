@@ -177,7 +177,7 @@ fun EditTransactionScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0x80000000)),
+                .background(Color(0xFF000000)),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(
