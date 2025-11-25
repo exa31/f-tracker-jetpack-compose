@@ -48,6 +48,18 @@ class HomeViewModel @Inject constructor(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing
 
+    private val _percentageIncome = MutableStateFlow(0)
+    val percentageIncome: StateFlow<Int> = _percentageIncome
+
+    private val _percentageExpanse = MutableStateFlow(0)
+    val percentageExpanse: StateFlow<Int> = _percentageExpanse
+
+    private val _isUpTrandIncome = MutableStateFlow(false)
+    val isUpTrandIncome: StateFlow<Boolean> = _isUpTrandIncome
+
+    private val _isUpTrandExpanse = MutableStateFlow(false)
+    val isUpTrandExpanse: StateFlow<Boolean> = _isUpTrandExpanse
+
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage
 
@@ -91,7 +103,36 @@ class HomeViewModel @Inject constructor(
                 _income.value = incomeTotal.toLong()
                 _expanse.value = expanseTotal.toLong()
 
+                val mappedLast = Transaction.fromDtoLast(data = transactions.data)
 
+                val lastIncomeTotal = mappedLast
+                    .filter { it.type.lowercase() == "income" }
+                    .sumOf { it.amount }
+                val lastExpanseTotal = mappedLast
+                    .filter { it.type.lowercase() == "expanse" }
+                    .sumOf { it.amount }
+
+                // Calculate percentage changes
+                if (lastIncomeTotal == 0) {
+                    _percentageIncome.value = if (incomeTotal == 0) 0 else 100
+                    _isUpTrandIncome.value = true
+                } else {
+                    val incomeChange = incomeTotal - lastIncomeTotal
+                    val incomePercentage =
+                        (incomeChange.toDouble() / lastIncomeTotal.toDouble()) * 100
+                    _percentageIncome.value = incomePercentage.toInt()
+                    _isUpTrandIncome.value = incomeChange >= 0
+                }
+                if (lastExpanseTotal == 0) {
+                    _percentageExpanse.value = if (expanseTotal == 0) 0 else 100
+                    _isUpTrandExpanse.value = true
+                } else {
+                    val expanseChange = expanseTotal - lastExpanseTotal
+                    val expansePercentage =
+                        (expanseChange.toDouble() / lastExpanseTotal.toDouble()) * 100
+                    _percentageExpanse.value = expansePercentage.toInt()
+                    _isUpTrandExpanse.value = expanseChange >= 0
+                }
             } catch (e: retrofit2.HttpException) {
                 val errorBody = e.response()?.errorBody()?.string()
                 val errorMessage = try {

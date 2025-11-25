@@ -26,6 +26,20 @@ data class Transaction(
             }
         }
 
+        fun fromDtoLast(data: TransactionResponse): List<Transaction> {
+            return data.last.map {
+                Transaction(
+                    _id = it._id,
+                    user = it.user,
+                    amount = it.amount,
+                    type = it.type,
+                    description = it.description,
+                    updatedAt = it.updatedAt,
+                    createdAt = it.createdAt
+                )
+            }
+        }
+
 
     }
 }

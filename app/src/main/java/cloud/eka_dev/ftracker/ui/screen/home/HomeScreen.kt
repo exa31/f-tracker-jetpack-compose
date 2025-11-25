@@ -58,6 +58,10 @@ fun HomeScreen(
 
     val income by vm.income.collectAsState()
     val expanse by vm.expanse.collectAsState()
+    val percentageIncome by vm.percentageIncome.collectAsState()
+    val percentageExpanse by vm.percentageExpanse.collectAsState()
+    val isUpTrandIncome by vm.isUpTrandIncome.collectAsState()
+    val isUpTrandExpanse by vm.isUpTrandExpanse.collectAsState()
     val transactionsByDate by vm.dataByDate.collectAsState()
     val loading by vm.loading.collectAsState()
     val loadingProggres by vm.loadingProggress.collectAsState()
@@ -187,7 +191,14 @@ fun HomeScreen(
                     if (loading) {
                         SummarySectionSkeleton()
                     } else {
-                        SummarySection(income, expanse)
+                        SummarySection(
+                            income,
+                            expanse,
+                            percentageIncome = percentageIncome,
+                            percentageExpanse = percentageExpanse,
+                            isUpTrandIncome = isUpTrandIncome,
+                            isUpTrandExpanse = isUpTrandExpanse
+                        )
                     }
 
                     Spacer(Modifier.height(24.dp))

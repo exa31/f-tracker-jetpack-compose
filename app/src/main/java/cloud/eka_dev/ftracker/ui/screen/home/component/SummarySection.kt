@@ -33,7 +33,14 @@ private val ExpenseRed = Color(0xFFEF4444)
 private val CardBg = Color(0xFF1F1F22) // ⬅️ Lebih gelap dari background tapi tetap beda
 
 @Composable
-fun SummarySection(income: Long, expense: Long) {
+fun SummarySection(
+    income: Long,
+    expense: Long,
+    percentageIncome: Int = 0,
+    percentageExpanse: Int = 0,
+    isUpTrandIncome: Boolean = false,
+    isUpTrandExpanse: Boolean = false,
+) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth()
@@ -41,15 +48,17 @@ fun SummarySection(income: Long, expense: Long) {
         SummaryCard(
             title = "Income",
             amount = income,
-            color = PrimaryGreen,
-            icon = Icons.AutoMirrored.Outlined.TrendingUp, // ⬅️ Income naik ✔
+            color = if (isUpTrandIncome) PrimaryGreen else ExpenseRed,
+            percentage = percentageIncome,
+            icon = if (isUpTrandIncome) Icons.AutoMirrored.Outlined.TrendingUp else Icons.AutoMirrored.Outlined.TrendingDown,
             modifier = Modifier.weight(1f)
         )
         SummaryCard(
             title = "Expanse",
             amount = expense,
-            color = ExpenseRed,
-            icon = Icons.AutoMirrored.Outlined.TrendingDown, // ⬅️ Expense turun ✔
+            color = if (isUpTrandExpanse) ExpenseRed else PrimaryGreen,
+            percentage = percentageExpanse,
+            icon = if (isUpTrandExpanse) Icons.AutoMirrored.Outlined.TrendingUp else Icons.AutoMirrored.Outlined.TrendingDown,
             modifier = Modifier.weight(1f)
         )
     }
@@ -78,7 +87,7 @@ fun SummaryCard(
                 title,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp,
-                color = Color.White
+                color = color
             )
 
             Spacer(Modifier.height(4.dp))
@@ -87,7 +96,7 @@ fun SummaryCard(
             Text(
                 text = formatCurrency(amount),
                 fontWeight = FontWeight.Bold,
-                color = color,
+                color = Color.White,
                 fontSize = 18.sp
             )
 
