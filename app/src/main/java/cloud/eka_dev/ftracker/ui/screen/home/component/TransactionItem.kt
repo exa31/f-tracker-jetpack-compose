@@ -58,7 +58,9 @@ fun TransactionItem(
                 )
                 Text(
                     formatCurrency(transaction.amount),
-                    color = if (transaction.amount > 0) Color(0xFF00E676) else Color(0xFFE53935),
+                    color = if (transaction.type.lowercase() == "income") Color(0xFF4CAF50) else Color(
+                        0xFFF44336
+                    ),
                     fontWeight = FontWeight.Bold,
                 )
             }
