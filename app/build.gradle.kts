@@ -40,7 +40,7 @@ android {
         create("release") {
             storeFile = file("../my-release-key.jks") // path ke keystore
             storePassword = "android"
-            keyAlias = "ftracker"
+            keyAlias = "myappkey"
             keyPassword = "android"
         }
     }

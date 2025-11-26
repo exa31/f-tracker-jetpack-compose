@@ -2,14 +2,12 @@ package cloud.eka_dev.ftracker.ui.screen.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
@@ -178,71 +176,76 @@ fun HomeScreen(
 
             ) {
 
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(
                             top = 16.dp,
                             start = 16.dp,
                             end = 16.dp,
-                            bottom = 88.dp // ✨ kasih space biar FAB nggak nutup konten
                         )
                 ) {
 
-                    if (loading) {
-                        SummarySectionSkeleton()
-                    } else {
-                        SummarySection(
-                            income,
-                            expanse,
-                            percentageIncome = percentageIncome,
-                            percentageExpanse = percentageExpanse,
-                            isUpTrandIncome = isUpTrandIncome,
-                            isUpTrandExpanse = isUpTrandExpanse
+                    item {
+                        if (loading) {
+                            SummarySectionSkeleton()
+                        } else {
+                            SummarySection(
+                                income = income,
+                                expense = expanse,
+                                percentageIncome = percentageIncome,
+                                percentageExpanse = percentageExpanse,
+                                isUpTrandIncome = isUpTrandIncome,
+                                isUpTrandExpanse = isUpTrandExpanse
+                            )
+                        }
+
+                        Spacer(Modifier.height(24.dp))
+
+                        Text(
+                            "Transactions",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        TransactionFilterTabs(
+                            selected = selectedView,
+                            onSelect = { vm.onViewOptionChange(it) }
+                        )
+
+                        Spacer(Modifier.height(12.dp))
                     }
 
-                    Spacer(Modifier.height(24.dp))
-
-                    Text(
-                        "Transactions",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-
-
-                    Spacer(Modifier.height(12.dp))
-
-                    TransactionFilterTabs(selected = selectedView, onSelect = {
-                        vm.onViewOptionChange(it)
-                    })
-
-                    Spacer(Modifier.height(12.dp))
-
                     if (loading) {
-                        // Tampilkan skeleton saat loading
-                        repeat(3) {
+                        items(3) {
                             TransactionSkeleton()
                             Spacer(Modifier.height(12.dp))
                         }
                     } else {
 
+                        // group per tanggal
                         transactionsByDate.forEach { (date, items) ->
-                            TransactionGroup(
-                                date = date,
-                                items = items,
-                                onEditClick = onEditClick,
-                                onDeleteClick = {
-                                    if (loadingProggres) return@TransactionGroup
-                                    vm.onDeleteClick(it)
-                                    showConfirmDialog = true
-                                },
-                            )
-                            Spacer(Modifier.height(12.dp))
+
+                            item {
+                                TransactionGroup(
+                                    date = date,
+                                    items = items,
+                                    onEditClick = onEditClick,
+                                    onDeleteClick = {
+                                        if (loadingProggres) return@TransactionGroup
+                                        vm.onDeleteClick(it)
+                                        showConfirmDialog = true
+                                    }
+                                )
+
+                                Spacer(Modifier.height(12.dp))
+                            }
                         }
                     }
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
 
             }

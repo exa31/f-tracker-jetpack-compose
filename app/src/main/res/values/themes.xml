@@ -2,8 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.FTrackerkotlin" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Disable Android 12+ splash screen -->
-        <item name="android:windowSplashScreenAnimatedIcon">@null</item>
-        <item name="android:windowSplashScreenBackground">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_transparent</item>
+
+        <item name="android:windowSplashScreenBackground">@android:color/black</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
 
         <!-- Status bar / navigation bar -->
