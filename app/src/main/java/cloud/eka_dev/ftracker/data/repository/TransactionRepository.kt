@@ -10,8 +10,8 @@ import javax.inject.Inject
 class TransactionRepository @Inject constructor(
     private val api: TransactionService
 ) {
-    suspend fun getTransactions(view: ViewOptions) =
-        api.getTransactions(view = view.label)
+    fun getTransactionsCall(view: ViewOptions) =
+        api.getTransactionsCall(view = view.label)
 
     suspend fun getTransactionDetail(id: String) =
         api.getTransactionDetail(transactionId = id)

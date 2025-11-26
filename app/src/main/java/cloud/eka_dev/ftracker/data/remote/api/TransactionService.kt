@@ -6,6 +6,7 @@ import cloud.eka_dev.ftracker.data.remote.dto.CreateTransactionRequest
 import cloud.eka_dev.ftracker.data.remote.dto.Transaction
 import cloud.eka_dev.ftracker.data.remote.dto.TransactionResponse
 import cloud.eka_dev.ftracker.data.remote.dto.UpdateTransactionRequest
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -17,7 +18,7 @@ import java.util.Objects
 
 interface TransactionService {
     @GET("api/v1/transactions")
-    suspend fun getTransactions(@Query("view") view: String = ViewOptions.MONTH.label): BaseResponse<TransactionResponse>
+    fun getTransactionsCall(@Query("view") view: String = ViewOptions.MONTH.label): Call<BaseResponse<TransactionResponse>>
 
     @GET("api/v1/transactions/{transactionId}")
     suspend fun getTransactionDetail(

@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -222,7 +223,11 @@ fun AddTransactionScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .clickable { showDatePicker = true }
+                        .clickable {
+                            showDatePicker = true
+                            isDescriptionFocused = false
+                            isAmountFocused = false
+                        }
                         .border(
                             width = 1.dp,
                             color = if (showDatePicker) GreenPrimary else Color.Gray,
@@ -333,7 +338,11 @@ fun AddTransactionScreen(
                                 textFieldWidth = coordinates.size.width
                             }
                             .padding(horizontal = 12.dp)
-                            .clickable { expanded = true },
+                            .clickable {
+                                expanded = true
+                                isDescriptionFocused = false
+                                isAmountFocused = false
+                            },
                         contentAlignment = Alignment.CenterStart
                     )
                     {
@@ -428,11 +437,13 @@ fun AddTransactionScreen(
                         placeholder = { Text("Enter amount", color = Color.Gray) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
+                            imeAction = ImeAction.Done,
+                            keyboardType = KeyboardType.Number
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 // Close keyboard
+                                if (loading) return@KeyboardActions
                                 if (!validate()) return@KeyboardActions
                                 val amt = amountField.text.replace("[^\\d]".toRegex(), "").toInt()
 

@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -98,6 +99,7 @@ fun EditTransactionScreen(
     )
 
     val loading by vm.loading.collectAsState()
+    val loadingProggres by vm.loadingProggres.collectAsState()
 
     val notFound by vm.notFound.collectAsState()
 
@@ -286,7 +288,11 @@ fun EditTransactionScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
-                        .clickable { showDatePicker = true }
+                        .clickable {
+                            showDatePicker = true
+                            isDescriptionFocused = false
+                            isAmountFocused = false
+                        }
                         .border(
                             width = 1.dp,
                             color = if (showDatePicker) GreenPrimary else Color.Gray,
@@ -397,7 +403,11 @@ fun EditTransactionScreen(
                                 textFieldWidth = coordinates.size.width
                             }
                             .padding(horizontal = 12.dp)
-                            .clickable { expanded = true },
+                            .clickable {
+                                expanded = true
+                                isDescriptionFocused = false
+                                isAmountFocused = false
+                            },
                         contentAlignment = Alignment.CenterStart
                     )
                     {
@@ -494,11 +504,13 @@ fun EditTransactionScreen(
                         placeholder = { Text("Enter amount", color = Color.Gray) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
+                            imeAction = ImeAction.Done,
+                            keyboardType = KeyboardType.Number
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 // Close keyboard
+                                if (loadingProggres) return@KeyboardActions
                                 if (!validate()) return@KeyboardActions
                                 val amt = amount.text.replace("[^\\d]".toRegex(), "").toInt()
 
@@ -540,7 +552,6 @@ fun EditTransactionScreen(
 
             Button(
                 onClick = {
-
                     if (!validate()) return@Button
 
                     val amt = amount.text.replace("[^\\d]".toRegex(), "").toInt()
@@ -554,11 +565,11 @@ fun EditTransactionScreen(
                     )
 
                 },
-                enabled = !loading,
+                enabled = !loadingProggres,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
             ) {
-                if (loading) {
+                if (loadingProggres) {
                     CircularProgressIndicator(
                         strokeWidth = 2.dp,
                         modifier = Modifier.size(22.dp),

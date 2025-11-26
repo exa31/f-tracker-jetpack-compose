@@ -50,6 +50,9 @@ class EditTransactionViewModel @Inject constructor(
     private val _loading = MutableStateFlow(true)
     val loading: StateFlow<Boolean> = _loading
 
+    private val _loadingProggres = MutableStateFlow(false)
+    val loadingProggres: StateFlow<Boolean> = _loadingProggres
+
     private val _snackbarMessage = MutableSharedFlow<String>()
     val snackbarMessage = _snackbarMessage
 
@@ -115,7 +118,7 @@ class EditTransactionViewModel @Inject constructor(
         onSuccess: () -> Unit
     ) {
         viewModelScope.launch {
-            _loading.value = true
+            _loadingProggres.value = true
             try {
                 repo.updateTransaction(
                     createdAt = date,
@@ -139,7 +142,7 @@ class EditTransactionViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("EditTransactionViewModel", "updateTransaction: ", e)
             } finally {
-                _loading.value = false
+                _loadingProggres.value = false
             }
 
         }

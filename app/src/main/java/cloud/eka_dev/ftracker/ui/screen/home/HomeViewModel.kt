@@ -7,15 +7,22 @@ import cloud.eka_dev.ftracker.data.enums.ViewOptions
 import cloud.eka_dev.ftracker.data.local.DataStoreManager
 import cloud.eka_dev.ftracker.data.model.Transaction
 import cloud.eka_dev.ftracker.data.remote.dto.BaseResponse
+import cloud.eka_dev.ftracker.data.remote.dto.TransactionResponse
 import cloud.eka_dev.ftracker.data.repository.AuthRepository
 import cloud.eka_dev.ftracker.data.repository.TransactionRepository
 import cloud.eka_dev.ftracker.utils.formatDate
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.awaitResponse
+import java.io.IOException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,7 +72,11 @@ class HomeViewModel @Inject constructor(
     val isUpTrandExpanse: StateFlow<Boolean> = _isUpTrandExpanse
 
     private val _snackbarMessage = MutableSharedFlow<String>()
+
     val snackbarMessage = _snackbarMessage
+    private var currentCallTransaction: Call<BaseResponse<TransactionResponse>>? = null
+    private var currentJob: Job? = null
+
 
     init {
         getTransactions()
@@ -89,67 +100,92 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getTransactions(viewOptions: ViewOptions = ViewOptions.MONTH) {
-        viewModelScope.launch {
+
+        // Cancel job lama
+        currentJob?.cancel()
+
+        // Cancel network call lama
+        currentCallTransaction?.cancel()
+
+        currentJob = viewModelScope.launch {
             _loading.value = true
+
             try {
-                val transactions = transactionRepo.getTransactions(view = viewOptions)
-                // Handle transactions
-                val mappedCurrent = Transaction.fromDtoCurrent(data = transactions.data)
-                _data.value = mappedCurrent
-                _dataByDate.value = mappedCurrent.groupBy { formatDate(it.createdAt) }
+                // Ambil call baru
+                val call = transactionRepo.getTransactionsCall(viewOptions)
+                currentCallTransaction = call
 
-                val incomeTotal = mappedCurrent
-                    .filter { it.type.lowercase() == "income" }
-                    .sumOf { it.amount }
-                val expanseTotal = mappedCurrent
-                    .filter { it.type.lowercase() == "expanse" }
-                    .sumOf { it.amount }
-                _income.value = incomeTotal.toLong()
-                _expanse.value = expanseTotal.toLong()
+                // Jalankan call secara suspend
+                val response = call.awaitResponse()
 
-                val mappedLast = Transaction.fromDtoLast(data = transactions.data)
+                if (response.isSuccessful) {
+                    val body = response.body()!!
+                    val mappedCurrent =
+                        Transaction.fromDtoCurrent(data = body.data)
 
-                val lastIncomeTotal = mappedLast
-                    .filter { it.type.lowercase() == "income" }
-                    .sumOf { it.amount }
-                val lastExpanseTotal = mappedLast
-                    .filter { it.type.lowercase() == "expanse" }
-                    .sumOf { it.amount }
+                    _data.value = mappedCurrent
+                    _dataByDate.value = mappedCurrent.groupBy { formatDate(it.createdAt) }
 
-                // Calculate percentage changes
-                if (lastIncomeTotal == 0) {
-                    _percentageIncome.value = if (incomeTotal == 0) 0 else 100
-                    _isUpTrandIncome.value = true
+                    val incomeTotal = mappedCurrent
+                        .filter { it.type.lowercase() == "income" }
+                        .sumOf { it.amount }
+                    val expanseTotal = mappedCurrent
+                        .filter { it.type.lowercase() == "expanse" }
+                        .sumOf { it.amount }
+                    _income.value = incomeTotal.toLong()
+                    _expanse.value = expanseTotal.toLong()
+
+                    val mappedLast = Transaction.fromDtoLast(data = body.data)
+
+                    val lastIncomeTotal = mappedLast
+                        .filter { it.type.lowercase() == "income" }
+                        .sumOf { it.amount }
+                    val lastExpanseTotal = mappedLast
+                        .filter { it.type.lowercase() == "expanse" }
+                        .sumOf { it.amount }
+
+                    // Calculate percentage changes
+                    if (lastIncomeTotal == 0) {
+                        _percentageIncome.value = if (incomeTotal == 0) 0 else 100
+                        _isUpTrandIncome.value = true
+                    } else {
+                        val incomeChange = incomeTotal - lastIncomeTotal
+                        val incomePercentage =
+                            (incomeChange.toDouble() / lastIncomeTotal.toDouble()) * 100
+                        _percentageIncome.value = incomePercentage.toInt()
+                        _isUpTrandIncome.value = incomeChange >= 0
+                    }
+
+                    if (lastExpanseTotal == 0) {
+                        _percentageExpanse.value = if (expanseTotal == 0) 0 else 100
+                        _isUpTrandExpanse.value = true
+                    } else {
+                        val expanseChange = expanseTotal - lastExpanseTotal
+                        val expansePercentage =
+                            (expanseChange.toDouble() / lastExpanseTotal.toDouble()) * 100
+                        _percentageExpanse.value = expansePercentage.toInt()
+                        _isUpTrandExpanse.value = expanseChange >= 0
+                    }
+
                 } else {
-                    val incomeChange = incomeTotal - lastIncomeTotal
-                    val incomePercentage =
-                        (incomeChange.toDouble() / lastIncomeTotal.toDouble()) * 100
-                    _percentageIncome.value = incomePercentage.toInt()
-                    _isUpTrandIncome.value = incomeChange >= 0
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        Gson().fromJson(errorBody, BaseResponse::class.java).message
+                    } catch (e: Exception) {
+                        "An error occurred"
+                    }
+                    println("HTTP Error: $errorMessage")
+                    _snackbarMessage.emit(errorMessage)
                 }
-                if (lastExpanseTotal == 0) {
-                    _percentageExpanse.value = if (expanseTotal == 0) 0 else 100
-                    _isUpTrandExpanse.value = true
-                } else {
-                    val expanseChange = expanseTotal - lastExpanseTotal
-                    val expansePercentage =
-                        (expanseChange.toDouble() / lastExpanseTotal.toDouble()) * 100
-                    _percentageExpanse.value = expansePercentage.toInt()
-                    _isUpTrandExpanse.value = expanseChange >= 0
-                }
-            } catch (e: retrofit2.HttpException) {
-                val errorBody = e.response()?.errorBody()?.string()
-                val errorMessage = try {
-                    Gson().fromJson(errorBody, BaseResponse::class.java).message
-                } catch (e: Exception) {
-                    "An error occurred"
-                }
-                println("HTTP Error: $errorMessage")
-                _snackbarMessage.emit(errorMessage)
-            } catch (_: java.net.SocketTimeoutException) {
+            } catch (e: SocketTimeoutException) {
                 _snackbarMessage.emit("Request timed out. Please try again.")
+            } catch (e: IOException) {
+                _snackbarMessage.emit("Network error occurred")
+            } catch (e: CancellationException) {
+                Log.d("HomeVM", "Request canceled")
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "getTransactions: ", e)
+                e.printStackTrace()
+                _snackbarMessage.emit("Error: ${e.message}")
             } finally {
                 _loading.value = false
                 _isRefreshing.value = false
